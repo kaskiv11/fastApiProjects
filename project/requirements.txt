@@ -1,0 +1,6 @@
+fastapi
+databases
+sqlalchemy
+pydantic
+aiomysql
+passlib[bcrypt]
