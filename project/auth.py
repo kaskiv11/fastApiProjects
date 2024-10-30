@@ -19,6 +19,7 @@ class Auth:
     def get_password_hash(cls, password):
         return cls.pwd_context.hash(password)
 
+
 def authenticate_user(db: Session, username: str, password: str):
     user = db.query(User).filter(User.username == username).first()
     if not user or not Auth.verify_password(password, user.hashed_password):
