@@ -1,41 +1,47 @@
-from typing import Optional, List
-import datetime
-
 from pydantic import BaseModel, EmailStr, Field
-
-
-class Author(BaseModel):
-    name: str = Field(..., example="John Sparl", description="Ім'я автора")
-    email: EmailStr = Field(..., example="John@gmail.com", description="Електронна пошта")
-    bio: Optional[str] = Field(None, example="Коротка біографія автора", description="Біографія автора")
-
-
-class Article(BaseModel):
-    title: str
-    content: str
-    authors: Author
-    tags: Optional[List[str]]
-    published_at: Optional[datetime]
-
-
-class Comment(BaseModel):
-    author_name: str
-    content: str
-    created_at: Optional[datetime] = datetime.now()
-
+from datetime import datetime
+from typing import List, Optional
 
 class UserCreate(BaseModel):
+    username: str = Field(..., description="Ім'я користувача")
+    email: EmailStr = Field(..., description="Електронна пошта")
+    password: str = Field(..., description="Пароль")
+
+class UserResponse(BaseModel):
+    id: int
     username: str
     email: EmailStr
-    password: str
 
+    class Config:
+        orm_mode = True
 
-class UserOut(BaseModel):
-    username: str
-    email: EmailStr
-    is_active: bool = True
+class ArticleModel(BaseModel):
+    title: str = Field(..., description="Назва статті")
+    content: str = Field(..., description="Вміст статті")
+    author_id: int = Field(..., description="ID автора")
 
+class ArticleResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    author_id: int
+    published_at: datetime
 
-class ArticleRequest(BaseModel):
-    keywords: List[str]
-    date_range: Optional[List[datetime]] = None
+    class Config:
+        orm_mode = True
+
+class CommentModel(BaseModel):
+    author_name: str = Field(..., description="Ім'я автора коментаря")
+    content: str = Field(..., description="Текст коментаря")
+    article_id: int = Field(..., description="ID статті для коментаря")
+
+class CommentResponse(BaseModel):
+    id: int
+    author_name: str
+    content: str
+    created_at: datetime
+    article_id: int
+
+    class Config:
+        orm_mode = True
+

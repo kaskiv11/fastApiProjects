@@ -1,25 +1,26 @@
-from fastapi import FastAPI, Query, Path
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-import crud, models, schemas
+from passlib.context import CryptContext
+from models import User
+from database import get_db
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-auth2_scheme = OAuth2PasswordBearer(tokenUrl="url")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+class Auth:
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+    @classmethod
+    def verify_password(cls, plain_password, hashed_password):
+        return cls.pwd_context.verify(plain_password, hashed_password)
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str):
-    return pwd_context.hash(password)
-
+    @classmethod
+    def get_password_hash(cls, password):
+        return cls.pwd_context.hash(password)
 
 def authenticate_user(db: Session, username: str, password: str):
-    user = crud.get_user_by_username(db, username)
-
-    if user and verify_password(password, user.has_password):
-        return user
-    return False
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not Auth.verify_password(password, user.hashed_password):
+        return False
+    return user

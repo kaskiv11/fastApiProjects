@@ -1,17 +1,21 @@
-from databases import Database
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = 'mysql+aiomysql://root:password@localhost:3306/info_hub'
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://username:password@localhost/info_hub"
 
-database = Database(DATABASE_URL)
-meta = MetaData()
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 Base = declarative_base()
 
+def init_db():
+    Base.metadata.create_all(bind=engine)
 
-async def connect():
-    await database.connect()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-
-async def disconnect():
-    await database.disconnect()
